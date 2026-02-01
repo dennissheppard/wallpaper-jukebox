@@ -8,42 +8,62 @@ interface Props {
 }
 
 function WallpaperDisplay({ currentImage, nextImage }: Props) {
-  const [displayImage, setDisplayImage] = useState<ImageResult | null>(null);
-  const [fadingOut, setFadingOut] = useState(false);
+  const [primaryImage, setPrimaryImage] = useState<ImageResult | null>(null);
+  const [secondaryImage, setSecondaryImage] = useState<ImageResult | null>(null);
+  const [showPrimary, setShowPrimary] = useState(true);
 
   useEffect(() => {
-    if (currentImage && currentImage !== displayImage) {
-      // Start fade out
-      setFadingOut(true);
+    if (!currentImage) return;
 
-      // After fade out completes, swap image and fade in
-      const timeout = setTimeout(() => {
-        setDisplayImage(currentImage);
-        setFadingOut(false);
-      }, 1500); // Match crossfade duration
-
-      return () => clearTimeout(timeout);
+    // First image - just set it
+    if (!primaryImage && !secondaryImage) {
+      setPrimaryImage(currentImage);
+      setShowPrimary(true);
+      return;
     }
-  }, [currentImage, displayImage]);
+
+    // Subsequent images - crossfade
+    if (currentImage !== primaryImage && currentImage !== secondaryImage) {
+      // Load new image into the inactive layer
+      if (showPrimary) {
+        setSecondaryImage(currentImage);
+        // Wait a moment for image to load, then crossfade
+        setTimeout(() => setShowPrimary(false), 100);
+      } else {
+        setPrimaryImage(currentImage);
+        setTimeout(() => setShowPrimary(true), 100);
+      }
+    }
+  }, [currentImage, primaryImage, secondaryImage, showPrimary]);
 
   return (
     <div className={styles.container}>
+      {/* Primary layer */}
       <div
-        className={`${styles.background} ${fadingOut ? styles.fadeOut : styles.fadeIn}`}
+        className={`${styles.background} ${styles.primary} ${showPrimary ? styles.visible : styles.hidden}`}
         style={{
-          backgroundImage: displayImage ? `url(${displayImage.url})` : 'none',
+          backgroundImage: primaryImage ? `url(${primaryImage.url})` : 'none',
         }}
       />
 
-      {displayImage && (
+      {/* Secondary layer */}
+      <div
+        className={`${styles.background} ${styles.secondary} ${!showPrimary ? styles.visible : styles.hidden}`}
+        style={{
+          backgroundImage: secondaryImage ? `url(${secondaryImage.url})` : 'none',
+        }}
+      />
+
+      {/* Attribution for currently visible image */}
+      {currentImage && (
         <div className={styles.attribution}>
           Photo by{' '}
-          <a href={displayImage.photographerUrl} target="_blank" rel="noopener noreferrer">
-            {displayImage.photographerName}
+          <a href={currentImage.photographerUrl} target="_blank" rel="noopener noreferrer">
+            {currentImage.photographerName}
           </a>
           {' '}on{' '}
-          <a href={displayImage.sourceUrl} target="_blank" rel="noopener noreferrer">
-            {displayImage.sourceName}
+          <a href={currentImage.sourceUrl} target="_blank" rel="noopener noreferrer">
+            {currentImage.sourceName}
           </a>
         </div>
       )}

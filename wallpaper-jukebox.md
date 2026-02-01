@@ -1,22 +1,3 @@
-Yep — building your own is totally doable, and you can get **hi-res images via APIs** without dealing with ad-riddled “screensaver” extensions.
-
-Also: *Live Start Page* doesn’t look dead to me — it still shows up on the Chrome Web Store. ([Chrome Web Store][1]) (There are also some claims floating around that it’s more “start page + backgrounds” than true live wallpapers, so I wouldn’t anchor your project around it.) ([LifeTips][2])
-
-## Image sources that work well for a rotating “full page wallpaper” web app
-
-These are the most practical options:
-
-* **Pexels API (free)** — straightforward search/curated endpoints, gives multiple sizes/URLs per image. ([Pexels][3])
-* **Pixabay API (free)** — search + filters; requires attribution when showing results (per their docs). ([Pixabay][4])
-* **Unsplash API (high quality, but has rules)** — great results, but you *must* attribute properly and link back with UTM params. ([Unsplash Help Center][5])
-
-  * Note: the old “Unsplash Source” random-image URL approach is deprecated for new projects. ([Unsplash][6])
-* **NASA Image & Video Library API** — incredible space imagery (not always “wallpaper-y,” but amazing for a “space” theme). ([NASA Open APIs][7])
-* **Picsum (super easy, but mostly for placeholders)** — dead simple random hi-res images; good for prototyping while you build the real thing. ([Lorem Picsum][8])
-
-If you want “free + easy + legit enough for a personal project,” I’d start with **Pexels**, and optionally add **Unsplash** once you’re ready to do attribution cleanly.
-
----
 
 ## The project plan: “Wallpaper Jukebox” (web app + optional Spotify-reactive mode)
 

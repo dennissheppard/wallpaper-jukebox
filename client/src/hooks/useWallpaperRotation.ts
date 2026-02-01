@@ -1,8 +1,10 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { Settings, ImageResult } from '../types';
+import { WeatherData } from '../types/weather';
 import { getImageProvider } from '../providers';
+import { getWeatherBasedTheme } from '../services/weatherService';
 
-export function useWallpaperRotation(settings: Settings) {
+export function useWallpaperRotation(settings: Settings, weather: WeatherData | null) {
   const [currentImage, setCurrentImage] = useState<ImageResult | null>(null);
   const [nextImage, setNextImage] = useState<ImageResult | null>(null);
   const [imageQueue, setImageQueue] = useState<ImageResult[]>([]);
@@ -13,12 +15,31 @@ export function useWallpaperRotation(settings: Settings) {
   // Fetch new images
   const fetchImages = useCallback(async () => {
     try {
-      const images = await provider.search(settings.theme);
+      let searchTheme = settings.theme;
+
+      // Priority 1: Custom search query
+      if (settings.theme === 'custom' && settings.customQuery.trim()) {
+        searchTheme = settings.customQuery.trim() as any;
+      }
+      // Priority 2: Weather-based theme
+      else if (settings.weather.enabled && settings.weather.mode !== 'off' && weather) {
+        const weatherQuery = await getWeatherBasedTheme(
+          weather.condition,
+          settings.weather.mode,
+          weather.temperature,
+          weather.temperatureUnit
+        );
+        if (weatherQuery) {
+          searchTheme = weatherQuery as any; // Use custom weather-based query
+        }
+      }
+
+      const images = await provider.search(searchTheme);
       setImageQueue(prev => [...prev, ...images].slice(0, 10)); // Keep max 10 in queue
     } catch (error) {
       console.error('Failed to fetch images:', error);
     }
-  }, [provider, settings.theme]);
+  }, [provider, settings.theme, settings.customQuery, settings.weather, weather]);
 
   // Preload next image
   useEffect(() => {
@@ -29,8 +50,17 @@ export function useWallpaperRotation(settings: Settings) {
       // Preload the image
       const img = new Image();
       img.src = next.url;
+
+      // If no current image, immediately show the first one
+      if (!currentImage) {
+        img.onload = () => {
+          setCurrentImage(next);
+          setImageQueue(prev => prev.slice(1));
+          setNextImage(null);
+        };
+      }
     }
-  }, [imageQueue, nextImage]);
+  }, [imageQueue, nextImage, currentImage]);
 
   // Rotate to next image
   const rotateNow = useCallback(() => {
@@ -55,19 +85,20 @@ export function useWallpaperRotation(settings: Settings) {
     };
   }, [settings.rotationInterval, rotateNow]);
 
+  // Clear queue and fetch new images when theme, source, custom query, or weather mode changes
+  useEffect(() => {
+    setImageQueue([]);
+    setNextImage(null);
+    setCurrentImage(null); // Force new image on settings change
+    fetchImages();
+  }, [settings.theme, settings.customQuery, settings.source, settings.weather.mode, fetchImages]);
+
   // Fetch images when queue is low
   useEffect(() => {
     if (imageQueue.length < 3) {
       fetchImages();
     }
   }, [imageQueue.length, fetchImages]);
-
-  // Initialize with first image
-  useEffect(() => {
-    if (!currentImage && imageQueue.length === 0) {
-      fetchImages();
-    }
-  }, [currentImage, imageQueue.length, fetchImages]);
 
   const likeImage = useCallback(() => {
     if (currentImage) {
@@ -77,15 +108,10 @@ export function useWallpaperRotation(settings: Settings) {
     }
   }, [currentImage]);
 
-  const skipImage = useCallback(() => {
-    rotateNow();
-  }, [rotateNow]);
-
   return {
     currentImage,
     nextImage,
     rotateNow,
     likeImage,
-    skipImage,
   };
 }

@@ -1,0 +1,107 @@
+.container {
+  position: fixed;
+  top: 16px;
+  right: 16px;
+  background: rgba(0, 0, 0, 0.5);
+  backdrop-filter: blur(20px);
+  border-radius: 8px;
+  padding: 10px 14px;
+  color: white;
+  z-index: 50;
+  transition: all 0.3s ease;
+  cursor: default;
+  min-width: 120px;
+}
+
+.container:hover {
+  background: rgba(0, 0, 0, 0.7);
+  padding: 14px 18px;
+}
+
+.compact {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 16px;
+}
+
+.icon {
+  font-size: 24px;
+  line-height: 1;
+}
+
+.temp {
+  font-weight: 600;
+  font-size: 18px;
+}
+
+.expanded {
+  margin-top: 12px;
+  padding-top: 12px;
+  border-top: 1px solid rgba(255, 255, 255, 0.2);
+  animation: fadeIn 0.3s ease;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-5px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.description {
+  font-size: 14px;
+  font-weight: 500;
+  margin-bottom: 8px;
+}
+
+.details {
+  font-size: 12px;
+  opacity: 0.9;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin-bottom: 10px;
+}
+
+.location {
+  font-size: 11px;
+  opacity: 0.7;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-top: 8px;
+}
+
+.locationText {
+  flex: 1;
+}
+
+.preciseBtn {
+  background: rgba(255, 255, 255, 0.15);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  color: white;
+  padding: 3px 8px;
+  border-radius: 4px;
+  font-size: 10px;
+  cursor: pointer;
+  transition: all 0.2s;
+  white-space: nowrap;
+}
+
+.preciseBtn:hover {
+  background: rgba(255, 255, 255, 0.25);
+  border-color: rgba(255, 255, 255, 0.5);
+}
+
+.approxNote {
+  font-size: 10px;
+  opacity: 0.6;
+  font-style: italic;
+  margin-top: 4px;
+}

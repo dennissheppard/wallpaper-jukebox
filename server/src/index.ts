@@ -4,6 +4,7 @@ import dotenv from 'dotenv';
 import authRoutes from './routes/auth';
 import imagesRoutes from './routes/images';
 import spotifyRoutes from './routes/spotify';
+import weatherRoutes from './routes/weather';
 
 dotenv.config();
 
@@ -17,6 +18,7 @@ app.use(express.json());
 app.use('/auth', authRoutes);
 app.use('/api/images', imagesRoutes);
 app.use('/api/spotify', spotifyRoutes);
+app.use('/api/weather', weatherRoutes);
 
 // Health check
 app.get('/health', (req, res) => {

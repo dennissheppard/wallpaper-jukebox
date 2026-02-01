@@ -1,12 +1,19 @@
 import { useState, useEffect } from 'react';
 import WallpaperDisplay from './components/WallpaperDisplay';
+import WeatherDisplay from './components/WeatherDisplay';
 import ControlsHUD from './components/ControlsHUD';
 import { useWallpaperRotation } from './hooks/useWallpaperRotation';
 import { useSettings } from './hooks/useSettings';
+import { useWeather } from './hooks/useWeather';
 
 function App() {
   const { settings, updateSettings } = useSettings();
-  const { currentImage, nextImage, rotateNow, likeImage, skipImage } = useWallpaperRotation(settings);
+  const { weather, loading: weatherLoading, requestPreciseLocation } = useWeather(
+    settings.weather.enabled,
+    settings.weather.usePreciseLocation,
+    settings.weather.temperatureUnit
+  );
+  const { currentImage, nextImage, rotateNow, likeImage } = useWallpaperRotation(settings, weather);
   const [showControls, setShowControls] = useState(true);
 
   // Check for kiosk mode
@@ -34,13 +41,20 @@ function App() {
     <div className="app">
       <WallpaperDisplay currentImage={currentImage} nextImage={nextImage} />
 
+      {settings.weather.enabled && (
+        <WeatherDisplay
+          weather={weather}
+          loading={weatherLoading}
+          onRequestPreciseLocation={requestPreciseLocation}
+        />
+      )}
+
       {showControls && (
         <ControlsHUD
           settings={settings}
           onSettingsChange={updateSettings}
           onRotateNow={rotateNow}
           onLike={likeImage}
-          onSkip={skipImage}
           currentImage={currentImage}
         />
       )}

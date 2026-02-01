@@ -8,17 +8,24 @@ export interface ImageResult {
   id: string;
 }
 
-export type Theme = 'nature' | 'space' | 'cities' | 'abstract' | 'random';
+export type Theme = 'nature' | 'space' | 'cities' | 'abstract' | 'random' | 'custom';
 export type RotationInterval = 15 | 30 | 60 | 300 | 900 | 0; // seconds, 0 = manual only
 export type ImageSource = 'pexels' | 'unsplash' | 'pixabay' | 'nasa';
 
 export interface Settings {
   theme: Theme;
+  customQuery: string;
   rotationInterval: RotationInterval;
   source: ImageSource;
   showClock: boolean;
   enableSpotify: boolean;
   crossfadeDuration: number; // milliseconds
+  weather: {
+    enabled: boolean;
+    mode: 'off' | 'match' | 'escape';
+    usePreciseLocation: boolean;
+    temperatureUnit: 'C' | 'F';
+  };
 }
 
 export interface SpotifyTrack {

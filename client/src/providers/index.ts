@@ -1,13 +1,15 @@
 import { ImageResult, Theme, ImageSource } from '../types';
 
 export interface ImageProvider {
-  search(theme: Theme, orientation?: 'landscape' | 'portrait', minWidth?: number, minHeight?: number): Promise<ImageResult[]>;
+  search(theme: Theme | string, orientation?: 'landscape' | 'portrait', minWidth?: number, minHeight?: number): Promise<ImageResult[]>;
 }
 
 class PexelsProvider implements ImageProvider {
-  async search(theme: Theme): Promise<ImageResult[]> {
-    // Placeholder implementation - will use API proxy
-    const query = this.getQueryForTheme(theme);
+  async search(theme: Theme | string): Promise<ImageResult[]> {
+    // If theme is a custom string (from weather), use it directly
+    const query = typeof theme === 'string' && !['nature', 'space', 'cities', 'abstract', 'random'].includes(theme)
+      ? theme
+      : this.getQueryForTheme(theme as Theme);
 
     try {
       const response = await fetch(`/api/images/pexels?query=${encodeURIComponent(query)}&per_page=10`);
@@ -32,8 +34,11 @@ class PexelsProvider implements ImageProvider {
 }
 
 class UnsplashProvider implements ImageProvider {
-  async search(theme: Theme): Promise<ImageResult[]> {
-    const query = this.getQueryForTheme(theme);
+  async search(theme: Theme | string): Promise<ImageResult[]> {
+    // If theme is a custom string (from weather), use it directly
+    const query = typeof theme === 'string' && !['nature', 'space', 'cities', 'abstract', 'random'].includes(theme)
+      ? theme
+      : this.getQueryForTheme(theme as Theme);
 
     try {
       const response = await fetch(`/api/images/unsplash?query=${encodeURIComponent(query)}&per_page=10`);
