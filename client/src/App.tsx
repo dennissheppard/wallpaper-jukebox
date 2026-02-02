@@ -7,6 +7,7 @@ import Clock from './components/Clock';
 import LyricsBadge from './components/LyricsBadge';
 import GlobalToggle from './components/GlobalToggle';
 import IdleOverlay from './components/IdleOverlay';
+import ExploringToast from './components/ExploringToast';
 import { useWallpaperRotation } from './hooks/useWallpaperRotation';
 import { useSettings } from './hooks/useSettings';
 import { useWeather } from './hooks/useWeather';
@@ -20,7 +21,16 @@ function App() {
     settings.weather.usePreciseLocation,
     settings.weather.temperatureUnit
   );
-  const { currentImage, nextImage, rotateNow, likeImage } = useWallpaperRotation(settings, weather);
+  // Handle internal query changes from wallpaper rotation (variations/fallbacks)
+  const handleWallpaperQueryChange = useCallback((query: string) => {
+    updateSettings({ customQuery: query, theme: 'custom' });
+  }, [updateSettings]);
+
+  const { currentImage, nextImage, rotateNow, likeImage, exploringTheme } = useWallpaperRotation(
+    settings,
+    weather,
+    { onQueryChange: handleWallpaperQueryChange }
+  );
   const { isIdle, resetIdle } = useIdle();
   
   // State for component minimization (lifted from components)
@@ -109,7 +119,8 @@ function App() {
   return (
     <div className="app">
       {isIdle && <IdleOverlay onContinue={resetIdle} />}
-      
+      {exploringTheme && <ExploringToast theme={exploringTheme} />}
+
       <WallpaperDisplay currentImage={currentImage} nextImage={nextImage} />
 
       <GlobalToggle 

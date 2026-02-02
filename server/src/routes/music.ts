@@ -1,7 +1,5 @@
 import express from 'express';
 import multer from 'multer';
-import fs from 'fs';
-import path from 'path';
 import { recognizeMusic, MusicMetadata } from '../services/musicRecognitionService';
 import { generateWallpaperQuery, MappingMode, GENRE_THEMES, COMMON_WORDS, extractLyricalPhrase, getLyricalCandidates } from '../services/musicThemeMappingService';
 import { getTrackTags, getArtistTags, tagsToWallpaperQuery, filterVisualTags } from '../services/lastfmService';
@@ -72,11 +70,6 @@ router.post('/recognize', musicRateLimiter, upload.single('audio'), async (req, 
     console.log('[Music Route]   - MIME type:', req.file.mimetype);
     console.log('[Music Route]   - Size:', req.file.buffer.length, 'bytes');
     console.log('[Music Route]   - Mapping mode:', mappingMode);
-
-    // Save audio file for debugging (in project root)
-    const debugPath = path.join(process.cwd(), 'debug-recording.webm');
-    fs.writeFileSync(debugPath, req.file.buffer);
-    console.log('[Music Route] Saved debug audio to:', debugPath);
 
     // Recognize music using the uploaded file buffer
     const music = await recognizeMusic(req.file.buffer, req.file.originalname);

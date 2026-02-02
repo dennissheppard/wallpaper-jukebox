@@ -56,7 +56,114 @@ export interface MusicMetadata {
   metadata?: string[]; // Any other useful text found
 }
 
-// Helper to fetch lyrics from Lyrics.ovh (free API)
+// LRCLIB API response structure
+interface LrclibResponse {
+  id: number;
+  trackName: string;
+  artistName: string;
+  albumName?: string;
+  duration?: number;
+  instrumental: boolean;
+  plainLyrics: string | null;
+  syncedLyrics: string | null;
+}
+
+// Helper to fetch lyrics from LRCLIB (primary provider)
+async function fetchLyricsFromLrclib(artist: string, title: string): Promise<string[]> {
+  try {
+    // Clean names for better matching
+    const cleanArtist = artist.split(/,| ft. | feat. /i)[0].trim();
+    const cleanTitle = title.replace(/\s*\(.*?\)/g, '').trim();
+
+    console.log(`[LRCLIB] Fetching lyrics for "${cleanTitle}" by "${cleanArtist}"...`);
+
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 10000);
+
+    // Strategy 1: Try exact match with /api/get
+    const getUrl = `https://lrclib.net/api/get?artist_name=${encodeURIComponent(cleanArtist)}&track_name=${encodeURIComponent(cleanTitle)}`;
+    console.log(`[LRCLIB] Trying exact match: ${getUrl}`);
+
+    let response = await fetch(getUrl, {
+      signal: controller.signal,
+      headers: {
+        'User-Agent': 'WallpaperJukebox/1.0 (https://github.com/wallpaper-jukebox)',
+      }
+    });
+
+    // Strategy 2: If exact match fails, try search endpoint
+    if (!response.ok) {
+      console.log(`[LRCLIB] Exact match failed (${response.status}), trying search...`);
+
+      const searchUrl = `https://lrclib.net/api/search?track_name=${encodeURIComponent(cleanTitle)}&artist_name=${encodeURIComponent(cleanArtist)}`;
+      console.log(`[LRCLIB] Search URL: ${searchUrl}`);
+
+      response = await fetch(searchUrl, {
+        signal: controller.signal,
+        headers: {
+          'User-Agent': 'WallpaperJukebox/1.0 (https://github.com/wallpaper-jukebox)',
+        }
+      });
+
+      clearTimeout(timeoutId);
+
+      if (!response.ok) {
+        console.log(`[LRCLIB] Search also failed: ${response.status}`);
+        return [];
+      }
+
+      const searchResults: LrclibResponse[] = await response.json();
+      if (searchResults.length === 0) {
+        console.log('[LRCLIB] No search results found');
+        return [];
+      }
+
+      // Use the first result
+      const result = searchResults[0];
+      console.log(`[LRCLIB] Found via search: "${result.trackName}" by "${result.artistName}"`);
+
+      if (result.instrumental) {
+        console.log('[LRCLIB] Track is instrumental, no lyrics available');
+        return [];
+      }
+
+      if (result.plainLyrics) {
+        console.log('[LRCLIB] Lyrics found via search!');
+        return result.plainLyrics.split('\n').filter((line: string) => line.trim().length > 0);
+      }
+
+      return [];
+    }
+
+    clearTimeout(timeoutId);
+
+    const data: LrclibResponse = await response.json();
+
+    if (data.instrumental) {
+      console.log('[LRCLIB] Track is instrumental, no lyrics available');
+      return [];
+    }
+
+    if (data.plainLyrics) {
+      console.log('[LRCLIB] Lyrics found via exact match!');
+      return data.plainLyrics.split('\n').filter((line: string) => line.trim().length > 0);
+    }
+
+    console.log('[LRCLIB] No plainLyrics in response');
+    return [];
+  } catch (error) {
+    if (error instanceof Error) {
+      if (error.name === 'AbortError') {
+        console.log('[LRCLIB] Request timed out');
+      } else {
+        console.log('[LRCLIB] Error fetching lyrics:', error.message);
+      }
+    }
+    return [];
+  }
+}
+
+// Helper to fetch lyrics from Lyrics.ovh (fallback provider)
 async function fetchLyricsFromOvh(artist: string, title: string): Promise<string[]> {
   try {
     // Clean names for better matching (remove "feat.", "(Remastered)", etc.)
@@ -310,26 +417,29 @@ export async function recognizeMusic(audioBuffer: Buffer, filename: string = 'au
     }
 
     console.log('[Music Recognition] Extracted - Title:', title, 'Artist:', artist);
-    
-    // Fallback: Fetch lyrics from Lyrics.ovh if missing
+
+    // Fetch lyrics if missing: LRCLIB (primary) -> Lyrics.ovh (fallback)
     if (lyrics.length === 0 && title && artist) {
-      console.log('[Music Recognition] No lyrics found from Shazam. Trying Lyrics.ovh...');
-      const ovhLyrics = await fetchLyricsFromOvh(artist, title);
-      if (ovhLyrics.length > 0) {
-        lyrics = ovhLyrics;
-        console.log('[Music Recognition] Fetched', lyrics.length, 'lines from Lyrics.ovh');
+      console.log('[Music Recognition] No lyrics found from Shazam. Trying LRCLIB...');
+
+      // Try LRCLIB first (primary provider)
+      const lrclibLyrics = await fetchLyricsFromLrclib(artist, title);
+      if (lrclibLyrics.length > 0) {
+        lyrics = lrclibLyrics;
+        console.log('[Music Recognition] Fetched', lyrics.length, 'lines from LRCLIB');
+      } else {
+        // Fallback to Lyrics.ovh
+        console.log('[Music Recognition] LRCLIB failed, trying Lyrics.ovh as fallback...');
+        const ovhLyrics = await fetchLyricsFromOvh(artist, title);
+        if (ovhLyrics.length > 0) {
+          lyrics = ovhLyrics;
+          console.log('[Music Recognition] Fetched', lyrics.length, 'lines from Lyrics.ovh');
+        } else {
+          console.log('[Music Recognition] No lyrics found from any provider');
+        }
       }
     } else if (lyrics.length > 0) {
       console.log('[Music Recognition] Found lyrics lines from Shazam:', lyrics.length);
-    } else {
-        // Debug info if still no lyrics
-        if (data.resources && data.results?.matches && data.results.matches.length > 0) {
-             const matchId = data.results.matches[0].id;
-             const shazamSong = data.resources['shazam-songs']?.[matchId];
-             if (shazamSong?.attributes) {
-                 console.log('[Music Recognition] Debug Attributes Keys:', Object.keys(shazamSong.attributes));
-             }
-        }
     }
 
     return {

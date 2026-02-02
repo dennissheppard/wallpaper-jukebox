@@ -1,15 +1,17 @@
 .wrapper {
   position: fixed;
   bottom: 20px;
-  left: 50%;
-  transform: translateX(-50%);
+  left: 0;
+  width: 100%;
   z-index: 40;
   display: flex;
   justify-content: center;
   align-items: flex-end;
+  pointer-events: none; /* Allow clicks to pass through the full-width container */
 }
 
 .expandedContent {
+  pointer-events: auto; /* Capture clicks on content */
   background: rgba(0, 0, 0, 0.7);
   backdrop-filter: blur(20px);
   border-radius: 12px;
@@ -29,6 +31,7 @@
 }
 
 .minimizedIcon {
+  pointer-events: auto; /* Capture clicks on icon */
   position: absolute;
   bottom: 0;
   left: 50%;
@@ -50,7 +53,7 @@
   transition: all 0.8s cubic-bezier(0.34, 1.56, 0.64, 1);
   transform-origin: center;
   opacity: 0;
-  pointer-events: none;
+  /* pointer-events: none; handled by opacity/scale logic usually, but explicit is safer */
 }
 
 /* State: Minimized */
