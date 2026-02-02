@@ -5,6 +5,7 @@ import path from 'path';
 import { recognizeMusic, MusicMetadata } from '../services/musicRecognitionService';
 import { generateWallpaperQuery, MappingMode, GENRE_THEMES, COMMON_WORDS, extractLyricalPhrase, getLyricalCandidates } from '../services/musicThemeMappingService';
 import { getTrackTags, getArtistTags, tagsToWallpaperQuery, filterVisualTags } from '../services/lastfmService';
+import { musicRateLimiter } from '../middleware/rateLimit';
 
 const router = express.Router();
 
@@ -57,7 +58,7 @@ const upload = multer({
   },
 });
 
-router.post('/recognize', upload.single('audio'), async (req, res) => {
+router.post('/recognize', musicRateLimiter, upload.single('audio'), async (req, res) => {
   try {
     const mappingMode = (req.body.mappingMode as MappingMode) || 'mood';
 

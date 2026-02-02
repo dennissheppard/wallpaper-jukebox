@@ -11,11 +11,12 @@ import {
 interface UseMusicRecognitionOptions {
   settings: MusicSettings;
   onWallpaperQueryReady?: (query: string, lyric: string | null) => void;
+  isIdle?: boolean;
 }
 
 const MAX_CONSECUTIVE_FAILURES = 2;
 
-export function useMusicRecognition({ settings, onWallpaperQueryReady }: UseMusicRecognitionOptions) {
+export function useMusicRecognition({ settings, onWallpaperQueryReady, isIdle = false }: UseMusicRecognitionOptions) {
   const [isRecording, setIsRecording] = useState(false);
   const [isRecognizing, setIsRecognizing] = useState(false);
   const [lastTrack, setLastTrack] = useState<MusicMetadata | null>(null);
@@ -170,7 +171,7 @@ export function useMusicRecognition({ settings, onWallpaperQueryReady }: UseMusi
   }, [recognizeNow]);
 
   useEffect(() => {
-    if (!settings.enabled || !settings.autoRecognize || settings.autoInterval === 0 || isAutoPaused) {
+    if (!settings.enabled || !settings.autoRecognize || settings.autoInterval === 0 || isAutoPaused || isIdle) {
       return;
     }
 

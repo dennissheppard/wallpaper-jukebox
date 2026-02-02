@@ -6,10 +6,12 @@ import NowPlaying from './components/NowPlaying';
 import Clock from './components/Clock';
 import LyricsBadge from './components/LyricsBadge';
 import GlobalToggle from './components/GlobalToggle';
+import IdleOverlay from './components/IdleOverlay';
 import { useWallpaperRotation } from './hooks/useWallpaperRotation';
 import { useSettings } from './hooks/useSettings';
 import { useWeather } from './hooks/useWeather';
 import { useMusicRecognition } from './hooks/useMusicRecognition';
+import { useIdle } from './hooks/useIdle';
 
 function App() {
   const { settings, updateSettings } = useSettings();
@@ -19,6 +21,7 @@ function App() {
     settings.weather.temperatureUnit
   );
   const { currentImage, nextImage, rotateNow, likeImage } = useWallpaperRotation(settings, weather);
+  const { isIdle, resetIdle } = useIdle();
   
   // State for component minimization (lifted from components)
   const [minimizedStates, setMinimizedStates] = useState({
@@ -74,6 +77,7 @@ function App() {
   } = useMusicRecognition({
     settings: settings.music,
     onWallpaperQueryReady: handleMusicWallpaperQuery,
+    isIdle,
   });
 
   // Handle manual music recognition button click
@@ -105,6 +109,8 @@ function App() {
 
   return (
     <div className="app">
+      {isIdle && <IdleOverlay onContinue={resetIdle} />}
+      
       <WallpaperDisplay currentImage={currentImage} nextImage={nextImage} />
 
       <GlobalToggle 

@@ -80,22 +80,22 @@ Click **"Save Changes"** - Render auto-redeploys.
 
 1. Log in to GoDaddy → **"My Products"** → **"DNS"** for your domain
 
-**For root domain (e.g., `wallpaperjukebox.com`):**
+**Important:** Render suggests two CNAMEs, but GoDaddy (and most DNS providers) doesn't support CNAME for root domains. Use this setup instead:
+
+**Step 1: Delete existing records**
+- Look for any existing `A` or `CNAME` records for `@` and `www`
+- Delete them (these are often default parking page records)
+
+**Step 2: Add these records**
 
 | Type | Name | Value | TTL |
 |------|------|-------|-----|
 | A | @ | `216.24.57.1` | 600 |
-
-**For www subdomain (e.g., `www.wallpaperjukebox.com`):**
-
-| Type | Name | Value | TTL |
-|------|------|-------|-----|
 | CNAME | www | `your-service-name.onrender.com` | 600 |
 
-**For both root + www (recommended):**
-- Add the A record for root domain
-- Add the CNAME for www
-- In Render, add both `wallpaperjukebox.com` AND `www.wallpaperjukebox.com` as custom domains
+**Why A record for root?** DNS spec doesn't allow CNAME on root/apex domains. Only providers with ALIAS/ANAME support (like Cloudflare) can do CNAME-like behavior for root. GoDaddy doesn't have this, so use the A record IP that Render provides.
+
+**In Render:** Add both `yourdomain.com` AND `www.yourdomain.com` as custom domains
 
 ### 4.3: Verify & Wait
 
