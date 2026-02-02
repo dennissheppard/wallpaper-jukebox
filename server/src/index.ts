@@ -53,7 +53,8 @@ if (process.env.NODE_ENV === 'production') {
   app.use(express.static(clientDistPath));
 
   // Handle SPA routing - serve index.html for all non-API routes
-  app.get('*', (req, res) => {
+  // Express 5 requires '{*path}' syntax instead of '*'
+  app.get('{*path}', (req, res) => {
     res.sendFile(path.join(clientDistPath, 'index.html'));
   });
 }
