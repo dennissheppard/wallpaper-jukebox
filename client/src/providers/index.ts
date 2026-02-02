@@ -1,18 +1,18 @@
 import { ImageResult, Theme, ImageSource } from '../types';
 
 export interface ImageProvider {
-  search(theme: Theme | string, orientation?: 'landscape' | 'portrait', minWidth?: number, minHeight?: number): Promise<ImageResult[]>;
+  search(theme: Theme | string, orientation?: 'landscape' | 'portrait', minWidth?: number, minHeight?: number, page?: number): Promise<ImageResult[]>;
 }
 
 class PexelsProvider implements ImageProvider {
-  async search(theme: Theme | string): Promise<ImageResult[]> {
+  async search(theme: Theme | string, orientation?: 'landscape' | 'portrait', minWidth?: number, minHeight?: number, page: number = 1): Promise<ImageResult[]> {
     // If theme is a custom string (from weather), use it directly
     const query = typeof theme === 'string' && !['nature', 'space', 'cities', 'abstract', 'random'].includes(theme)
       ? theme
       : this.getQueryForTheme(theme as Theme);
 
     try {
-      const response = await fetch(`/api/images/pexels?query=${encodeURIComponent(query)}&per_page=10`);
+      const response = await fetch(`/api/images/pexels?query=${encodeURIComponent(query)}&per_page=10&page=${page}`);
       const data = await response.json();
       return data.images || [];
     } catch (error) {
@@ -34,14 +34,14 @@ class PexelsProvider implements ImageProvider {
 }
 
 class UnsplashProvider implements ImageProvider {
-  async search(theme: Theme | string): Promise<ImageResult[]> {
+  async search(theme: Theme | string, orientation?: 'landscape' | 'portrait', minWidth?: number, minHeight?: number, page: number = 1): Promise<ImageResult[]> {
     // If theme is a custom string (from weather), use it directly
     const query = typeof theme === 'string' && !['nature', 'space', 'cities', 'abstract', 'random'].includes(theme)
       ? theme
       : this.getQueryForTheme(theme as Theme);
 
     try {
-      const response = await fetch(`/api/images/unsplash?query=${encodeURIComponent(query)}&per_page=10`);
+      const response = await fetch(`/api/images/unsplash?query=${encodeURIComponent(query)}&per_page=10&page=${page}`);
       const data = await response.json();
       return data.images || [];
     } catch (error) {
@@ -56,6 +56,35 @@ class UnsplashProvider implements ImageProvider {
       space: 'space astronomy',
       cities: 'city architecture',
       abstract: 'abstract art',
+      random: 'wallpaper',
+    };
+    return queries[theme];
+  }
+}
+
+class PixabayProvider implements ImageProvider {
+  async search(theme: Theme | string, orientation?: 'landscape' | 'portrait', minWidth?: number, minHeight?: number, page: number = 1): Promise<ImageResult[]> {
+    // If theme is a custom string (from weather), use it directly
+    const query = typeof theme === 'string' && !['nature', 'space', 'cities', 'abstract', 'random'].includes(theme)
+      ? theme
+      : this.getQueryForTheme(theme as Theme);
+
+    try {
+      const response = await fetch(`/api/images/pixabay?query=${encodeURIComponent(query)}&per_page=10&page=${page}`);
+      const data = await response.json();
+      return data.images || [];
+    } catch (error) {
+      console.error('Pixabay fetch error:', error);
+      return [];
+    }
+  }
+
+  private getQueryForTheme(theme: Theme): string {
+    const queries = {
+      nature: 'nature landscape mountains',
+      space: 'space galaxy stars',
+      cities: 'city architecture urban',
+      abstract: 'abstract background',
       random: 'wallpaper',
     };
     return queries[theme];
@@ -87,7 +116,7 @@ class PicsumProvider implements ImageProvider {
 const providers = {
   pexels: new PexelsProvider(),
   unsplash: new UnsplashProvider(),
-  pixabay: new PicsumProvider(), // Placeholder until Pixabay is implemented
+  pixabay: new PixabayProvider(),
   nasa: new PicsumProvider(), // Placeholder until NASA is implemented
 };
 

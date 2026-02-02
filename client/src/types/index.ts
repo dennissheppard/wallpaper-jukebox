@@ -6,6 +6,7 @@ export interface ImageResult {
   sourceUrl: string;
   attributionText: string;
   id: string;
+  tags?: string[];
 }
 
 export type Theme = 'nature' | 'space' | 'cities' | 'abstract' | 'random' | 'custom';
@@ -25,6 +26,13 @@ export interface Settings {
     mode: 'off' | 'match' | 'escape';
     usePreciseLocation: boolean;
     temperatureUnit: 'C' | 'F';
+  };
+  music: {
+    enabled: boolean;
+    autoRecognize: boolean;
+    autoInterval: number;
+    mappingMode: 'literal' | 'mood' | 'genre' | 'jukebox';
+    overrideTheme: boolean;
   };
 }
 

@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { Settings, ImageResult } from '../types';
+import { MusicMetadata } from '../types/music';
 import CustomSelect from './CustomSelect';
 import styles from './ControlsHUD.module.css';
 
@@ -9,6 +10,20 @@ interface Props {
   onRotateNow: () => void;
   onLike: () => void;
   currentImage: ImageResult | null;
+  musicState: {
+    isRecording: boolean;
+    isRecognizing: boolean;
+    lastTrack: MusicMetadata | null;
+    error: string | null;
+    permissionGranted: boolean | null;
+    apiUsage: number;
+    isAutoPaused: boolean;
+    pauseReason: string | null;
+  };
+  onRecognizeMusic: () => void;
+  onRequestMicPermission: () => void;
+  isMinimized: boolean;
+  onToggleMinimize: () => void;
 }
 
 function PillToggle({ checked, onChange, label }: { checked: boolean; onChange: (checked: boolean) => void; label: string }) {
@@ -29,7 +44,7 @@ function PillToggle({ checked, onChange, label }: { checked: boolean; onChange: 
 }
 
 interface AccordionSectionProps {
-  title: string;
+  title: React.ReactNode;
   isOpen: boolean;
   onToggle: () => void;
   children: React.ReactNode;
@@ -53,8 +68,7 @@ function AccordionSection({ title, isOpen, onToggle, children }: AccordionSectio
   );
 }
 
-function ControlsHUD({ settings, onSettingsChange, onRotateNow, onLike }: Props) {
-  const [isMinimized, setIsMinimized] = useState(false);
+function ControlsHUD({ settings, onSettingsChange, onRotateNow, onLike, musicState, onRecognizeMusic, onRequestMicPermission, isMinimized, onToggleMinimize }: Props) {
   const [openSection, setOpenSection] = useState<string>('image');
   const [customQueryInput, setCustomQueryInput] = useState(settings.customQuery);
   const debounceTimerRef = useRef<number>();
@@ -85,7 +99,7 @@ function ControlsHUD({ settings, onSettingsChange, onRotateNow, onLike }: Props)
 
   if (isMinimized) {
     return (
-      <div className={styles.minimized} onClick={() => setIsMinimized(false)}>
+      <div className={styles.minimized} onClick={onToggleMinimize}>
         ⚙️
       </div>
     );
@@ -95,7 +109,7 @@ function ControlsHUD({ settings, onSettingsChange, onRotateNow, onLike }: Props)
     <div className={styles.hud}>
       <div className={styles.header}>
         <h3 className={styles.title}>Wallpaper Jukebox</h3>
-        <button className={styles.minimizeBtn} onClick={() => setIsMinimized(true)}>
+        <button className={styles.minimizeBtn} onClick={onToggleMinimize}>
           _
         </button>
       </div>
@@ -111,7 +125,7 @@ function ControlsHUD({ settings, onSettingsChange, onRotateNow, onLike }: Props)
             <CustomSelect
               value={settings.theme}
               onChange={(value) => onSettingsChange({ theme: value as any })}
-              disabled={settings.weather.enabled && settings.weather.mode !== 'off'}
+              disabled={(settings.weather.enabled && settings.weather.mode !== 'off') || settings.music.enabled}
               options={[
                 { value: 'nature', label: 'Nature' },
                 { value: 'space', label: 'Space' },
@@ -124,6 +138,9 @@ function ControlsHUD({ settings, onSettingsChange, onRotateNow, onLike }: Props)
             {settings.weather.enabled && settings.weather.mode !== 'off' && (
               <div className={styles.note}>Controlled by weather</div>
             )}
+            {settings.music.enabled && (
+              <div className={styles.note}>Controlled by music</div>
+            )}
           </div>
 
           {settings.theme === 'custom' && !(settings.weather.enabled && settings.weather.mode !== 'off') && (
@@ -135,8 +152,11 @@ function ControlsHUD({ settings, onSettingsChange, onRotateNow, onLike }: Props)
                 placeholder="e.g., morning fog mist atmospheric"
                 value={customQueryInput}
                 onChange={(e) => setCustomQueryInput(e.target.value)}
+                disabled={settings.music.enabled}
               />
-              <div className={styles.note}>Type keywords to search for images</div>
+              <div className={styles.note}>
+                {settings.music.enabled ? 'Controlled by music' : 'Type keywords to search for images'}
+              </div>
             </div>
           )}
 
@@ -152,20 +172,6 @@ function ControlsHUD({ settings, onSettingsChange, onRotateNow, onLike }: Props)
                 { value: 300, label: '5 minutes' },
                 { value: 900, label: '15 minutes' },
                 { value: 0, label: 'Manual only' },
-              ]}
-            />
-          </div>
-
-          <div className={styles.control}>
-            <label>Source</label>
-            <CustomSelect
-              value={settings.source}
-              onChange={(value) => onSettingsChange({ source: value as any })}
-              options={[
-                { value: 'pexels', label: 'Pexels' },
-                { value: 'unsplash', label: 'Unsplash' },
-                { value: 'pixabay', label: 'Pixabay' },
-                { value: 'nasa', label: 'NASA' },
               ]}
             />
           </div>
@@ -237,11 +243,147 @@ function ControlsHUD({ settings, onSettingsChange, onRotateNow, onLike }: Props)
         </AccordionSection>
 
         <AccordionSection
-          title="Music Settings"
+          title={
+            <>
+              Music Settings
+              {musicState.isAutoPaused && (
+                <span
+                  className={styles.pausedBadge}
+                  title={musicState.pauseReason || 'Auto-recognition paused'}
+                >
+                  ⏸
+                </span>
+              )}
+            </>
+          }
           isOpen={openSection === 'music'}
           onToggle={() => setOpenSection(openSection === 'music' ? '' : 'music')}
         >
-          <div className={styles.comingSoon}>Coming soon...</div>
+          <PillToggle
+            checked={settings.music.enabled}
+            onChange={(checked) =>
+              onSettingsChange({
+                music: { ...settings.music, enabled: checked },
+              })
+            }
+            label="Enable Music Recognition"
+          />
+
+          {settings.music.enabled && (
+            <>
+              {/* Permission Warning */}
+              {musicState.permissionGranted === false && (
+                <div className={styles.warning}>
+                  <span>Microphone permission required</span>
+                  <button
+                    className={styles.permissionBtn}
+                    onClick={onRequestMicPermission}
+                  >
+                    Grant Permission
+                  </button>
+                </div>
+              )}
+
+              {/* Manual Recognition Button */}
+              <div className={styles.control}>
+                <button
+                  className={`${styles.recognizeBtn} ${
+                    (musicState.isRecording || musicState.isRecognizing) ? styles.recognizeBtnActive : ''
+                  }`}
+                  onClick={onRecognizeMusic}
+                  disabled={
+                    musicState.isRecording ||
+                    musicState.isRecognizing ||
+                    musicState.permissionGranted === false ||
+                    musicState.apiUsage >= 250
+                  }
+                >
+                  {musicState.isRecording && 'Listening...'}
+                  {musicState.isRecognizing && 'Recognizing...'}
+                  {!musicState.isRecording && !musicState.isRecognizing && 'Recognize Music Now'}
+                </button>
+              </div>
+
+              {/* Error Message */}
+              {musicState.error && (
+                <div className={styles.errorMessage}>
+                  {musicState.error}
+                </div>
+              )}
+
+              {/* Last Recognized Track */}
+              {musicState.lastTrack && (
+                <div className={styles.trackInfo}>
+                  <div className={styles.trackTitle}>{musicState.lastTrack.title}</div>
+                  <div className={styles.trackArtist}>{musicState.lastTrack.artist}</div>
+                  <div className={styles.trackGenre}>{musicState.lastTrack.genre}</div>
+                </div>
+              )}
+
+              {/* Auto-Recognition Toggle */}
+              <PillToggle
+                checked={settings.music.autoRecognize}
+                onChange={(checked) =>
+                  onSettingsChange({
+                    music: { ...settings.music, autoRecognize: checked },
+                  })
+                }
+                label="Auto-Recognize"
+              />
+
+              {settings.music.autoRecognize && (
+                <div className={styles.control}>
+                  <label>Auto Interval</label>
+                  <CustomSelect
+                    value={settings.music.autoInterval}
+                    onChange={(value) =>
+                      onSettingsChange({
+                        music: { ...settings.music, autoInterval: Number(value) },
+                      })
+                    }
+                    options={[
+                      { value: 60, label: '1 minute' },
+                      { value: 180, label: '3 minutes' },
+                      { value: 300, label: '5 minutes' },
+                      { value: 600, label: '10 minutes' },
+                      { value: 0, label: 'Manual only' },
+                    ]}
+                  />
+                  <div className={styles.note}>
+                    Auto-recognize uses API calls
+                  </div>
+                </div>
+              )}
+
+              {/* Theme Override Toggle */}
+              <PillToggle
+                checked={settings.music.overrideTheme}
+                onChange={(checked) =>
+                  onSettingsChange({
+                    music: { ...settings.music, overrideTheme: checked },
+                  })
+                }
+                label="Override Other Themes"
+              />
+              {settings.music.overrideTheme && (
+                <div className={styles.note}>
+                  Music will override weather and manual themes
+                </div>
+              )}
+
+              {/* API Usage Display */}
+              {musicState.apiUsage >= 225 && (
+                <div className={styles.warning}>
+                  API limit warning: {musicState.apiUsage}/250 used this month
+                </div>
+              )}
+              {musicState.apiUsage < 225 && (
+                <div className={styles.note}>
+                  API usage: {musicState.apiUsage}/250 this month
+                </div>
+              )}
+            </>
+          )}
         </AccordionSection>
       </div>
 

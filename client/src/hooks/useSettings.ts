@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { Settings } from '../types';
 
 const DEFAULT_SETTINGS: Settings = {
@@ -15,6 +15,13 @@ const DEFAULT_SETTINGS: Settings = {
     usePreciseLocation: false,
     temperatureUnit: 'F',
   },
+  music: {
+    enabled: false,
+    autoRecognize: false,
+    autoInterval: 0,
+    mappingMode: 'jukebox',
+    overrideTheme: true,
+  },
 };
 
 const STORAGE_KEY = 'wallpaper-jukebox-settings';
@@ -25,13 +32,17 @@ export function useSettings() {
     if (stored) {
       try {
         const parsed = JSON.parse(stored);
-        // Deep merge to ensure nested weather object is properly merged
+        // Deep merge to ensure nested objects are properly merged
         return {
           ...DEFAULT_SETTINGS,
           ...parsed,
           weather: {
             ...DEFAULT_SETTINGS.weather,
             ...(parsed.weather || {}),
+          },
+          music: {
+            ...DEFAULT_SETTINGS.music,
+            ...(parsed.music || {}),
           },
         };
       } catch {
@@ -45,16 +56,20 @@ export function useSettings() {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(settings));
   }, [settings]);
 
-  const updateSettings = (partial: Partial<Settings>) => {
+  const updateSettings = useCallback((partial: Partial<Settings>) => {
     setSettings(prev => {
       const updated = { ...prev, ...partial };
       // Merge weather settings if provided
       if (partial.weather) {
         updated.weather = { ...prev.weather, ...partial.weather };
       }
+      // Merge music settings if provided
+      if (partial.music) {
+        updated.music = { ...prev.music, ...partial.music };
+      }
       return updated;
     });
-  };
+  }, []);
 
   return { settings, updateSettings };
 }

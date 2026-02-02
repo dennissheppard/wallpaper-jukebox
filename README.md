@@ -1,17 +1,42 @@
 # Wallpaper Jukebox
 
-A beautiful, full-screen wallpaper rotator with smooth crossfades and optional Spotify integration for music-reactive visuals.
+A beautiful, full-screen wallpaper rotator with smooth crossfades and weather-reactive image matching. Originally planned for Spotify integration (on hold due to API availability).
 
 ## Features
 
-- **Rotating Wallpapers**: Smooth crossfade transitions between high-quality images
-- **Multiple Sources**: Pexels, Unsplash, Pixabay, and NASA imagery
-- **Theme Selection**: Nature, Space, Cities, Abstract, or Random
+### ✅ Implemented
+
+- **Rotating Wallpapers**: Buttery smooth dual-layer crossfade transitions
+- **Multiple Image Sources**: Pexels (with more coming)
+- **Theme Selection**: Nature, Space, Cities, Abstract, Random, or Custom Search
+- **Custom Search**: Type any keywords to find exactly the vibe you want
+- **Weather Integration**: Matches or escapes current weather conditions
+  - Smart matching based on temperature, time of day, and conditions
+  - "Match Weather" mode: Snowy outside → snowy images
+  - "Escape Weather" mode: Snowy outside → tropical beaches
+  - IP-based location (with optional GPS precision)
+- **Modern UI**:
+  - Collapsible accordion sections
+  - iOS-style pill toggles
+  - Custom animated dropdowns
+  - Smooth panel animations
 - **Customizable Intervals**: From 15 seconds to manual-only control
-- **Like/Skip System**: Save favorites and skip unwanted images
+- **Like System**: Save your favorite images
 - **Kiosk Mode**: URL parameter to hide controls (`?hideControls=1`)
 - **Keyboard Shortcuts**: Ctrl+H to toggle controls
-- **Spotify Integration** (coming soon): Match wallpaper rotation to your music
+
+### 🚧 Coming Soon
+
+- **Clock Overlay**: Time display with customizable styles
+- **Unsplash Integration**: Higher quality curated images
+- **NASA Imagery**: Space and astronomy photos
+- **Favorites Gallery**: Browse and manage liked images
+- **More Keyboard Shortcuts**: Navigate, like, skip via keyboard
+- **Shareable Configurations**: Save and share your perfect setup
+
+### ⏸️ On Hold
+
+- **Spotify Integration**: Music-reactive wallpapers (Spotify API currently closed to new apps)
 
 ## Project Structure
 
@@ -103,11 +128,27 @@ npm start
 
 ### Basic Controls
 
-- **Theme Picker**: Select from Nature, Space, Cities, Abstract, or Random
-- **Rotation Interval**: Choose how often images rotate
-- **Source Picker**: Select which API to use for images
-- **Like**: Save images to your favorites
-- **Skip**: Immediately switch to the next image
+**Image Settings:**
+- **Theme**: Nature, Space, Cities, Abstract, Random, or Custom Search
+- **Custom Search**: Type any keywords (e.g., "morning fog mist atmospheric")
+- **Interval**: 15s, 30s, 1m, 5m, 15m, or manual only
+- **Source**: Pexels (more coming soon)
+
+**Weather Settings:**
+- **Enable Weather**: Toggle weather widget and/or weather-based images
+- **Mode**:
+  - Display Only: Shows weather without affecting images
+  - Match Weather: Images match your current weather
+  - Escape Weather: Images are opposite of your weather
+- **Temperature**: Fahrenheit or Celsius
+- **Location**: Approximate (IP-based) with option for GPS precision
+
+**Clock Settings:**
+- **Show Clock**: Toggle clock display (implementation coming soon)
+
+**Actions:**
+- **❤️ Like**: Save current image to favorites
+- **⏭️ Next**: Skip to next image immediately
 
 ### Keyboard Shortcuts
 
@@ -121,55 +162,75 @@ Add `?hideControls=1` to the URL to hide controls on page load:
 http://localhost:3002?hideControls=1
 ```
 
-## Implementation Phases
+## Implementation Status
 
-### Phase 1: Core Wallpaper Rotator ✅
-- Basic rotating wallpaper viewer
-- Smooth crossfade transitions
-- Image preloading
-- UI controls and settings
+### ✅ Phase 1: Core Wallpaper Rotator (Complete)
+- Dual-layer crossfade system for seamless transitions
+- Image preloading and queue management
+- Modern accordion-based UI with pill toggles
+- Custom animated dropdowns
 - localStorage persistence
+- Kiosk mode support
+- Settings instantly update images
 
-### Phase 2: Image Provider System ✅
+### ✅ Phase 2: Image Provider System (Complete)
 - Pluggable provider architecture
-- Pexels and Unsplash integration
-- Image queue and caching
+- Pexels integration with free API
+- Image queue and caching (max 10 images)
 - Like/skip functionality
+- Attribution display with photographer credits
 
-### Phase 3: Additional Sources (Coming Soon)
-- Pixabay provider
-- NASA imagery provider
-- Enhanced attribution display
+### ✅ Weather Integration (Bonus Feature - Complete)
+- Open-Meteo API integration (free, no key required)
+- IP-based location detection with optional GPS upgrade
+- Weather widget with hover expansion
+- Smart image matching:
+  - Considers temperature, time of day, and conditions
+  - "Match" mode for weather-appropriate images
+  - "Escape" mode for opposite weather vibes
+- Automatic refresh every 30 minutes
 
-### Phase 4: Backend & Auth (Coming Soon)
-- Express backend setup
-- Spotify OAuth integration
-- Token management
-- API proxying
+### ✅ Custom Search (Bonus Feature - Complete)
+- Free-form keyword search
+- Debounced input (800ms) for performance
+- Works with all image providers
+- Instant image updates
 
-### Phase 5: Spotify "Vibe Mode" (Coming Soon)
-- Currently Playing integration
-- Audio Analysis parsing
-- Music-to-theme mapping
-- Dynamic rotation based on tempo
+### 🚧 Phase 3: Additional Image Sources (In Progress)
+- ✅ Pexels provider
+- 🚧 Unsplash provider (structure ready, needs API key)
+- 📋 Pixabay provider
+- 📋 NASA imagery provider
 
-### Phase 6: Beat-Reactive Visuals (Coming Soon)
-- Canvas overlay effects
-- Beat-synchronized animations
-- Section-based wallpaper changes
+### ⏸️ Phase 4-6: Music Integration (On Hold)
+Spotify API is currently closed to new applications. These features are on hold:
+- Backend OAuth setup
+- "Vibe Mode" music matching
+- Beat-reactive visuals
 
-### Phase 7: Polish (Coming Soon)
-- Additional keyboard shortcuts
-- Favorites collection
-- Shareable configurations
-- Performance optimizations
+**Alternative:** May implement Apple Music or wait for Spotify API to reopen.
+
+### 📋 Phase 7: Polish & Enhancement (Planned)
+- Clock overlay implementation
+- Additional keyboard shortcuts (arrows, space, etc.)
+- Favorites gallery and management
+- Image quality/bandwidth selector
+- Shareable configuration URLs
+- Time-based auto-theming
+- Multiple display support
+- Accessibility improvements
 
 ## Tech Stack
 
 - **Frontend**: Vite + React + TypeScript
 - **Backend**: Express + TypeScript
-- **Styling**: CSS Modules
-- **APIs**: Pexels, Unsplash, Pixabay, NASA, Spotify (planned)
+- **Styling**: CSS Modules with custom animations
+- **APIs**:
+  - Open-Meteo (weather, free, no key)
+  - ip-api.com (geolocation, free, no key)
+  - Pexels (images, free with key)
+  - Unsplash (planned)
+  - Spotify (on hold - API closed)
 
 ## Contributing
 
@@ -181,4 +242,4 @@ ISC
 
 ---
 
-Built with 🎵 for those who love beautiful wallpapers and music.
+Built with 🌤️ for those who love beautiful wallpapers and ambient vibes.

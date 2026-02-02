@@ -1,0 +1,21 @@
+services:
+  - type: web
+    name: wallpaper-jukebox
+    runtime: node
+    buildCommand: npm install && npm run build
+    startCommand: npm start
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PEXELS_API_KEY
+        sync: false
+      - key: UNSPLASH_ACCESS_KEY
+        sync: false
+      - key: PIXABAY_API_KEY
+        sync: false
+      - key: RAPIDAPI_KEY
+        sync: false
+      - key: RAPIDAPI_HOST
+        value: shazam.p.rapidapi.com
+      - key: LASTFM_API_KEY
+        sync: false

@@ -3,7 +3,14 @@
     "allow": [
       "Bash(npm init:*)",
       "Bash(npm install:*)",
-      "Bash(curl:*)"
+      "Bash(curl:*)",
+      "WebFetch(domain:6xq.net)",
+      "WebFetch(domain:music.ai)",
+      "Bash(npm run build:*)",
+      "WebFetch(domain:railway.com)",
+      "WebFetch(domain:render.com)",
+      "WebFetch(domain:fly.io)",
+      "WebFetch(domain:www.koyeb.com)"
     ]
   }
 }
