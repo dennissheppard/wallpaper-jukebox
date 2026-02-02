@@ -144,7 +144,7 @@ Your project is already configured for Render:
   "build": "npm run build:client && npm run build:server",
   "build:client": "vite build",
   "build:server": "tsc -p tsconfig.server.json",
-  "start": "node dist/server/index.js"
+  "start": "node dist/server/src/index.js"
 }
 ```
 

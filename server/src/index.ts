@@ -22,6 +22,19 @@ const PORT = process.env.PORT || 3001;
 app.use(cors());
 app.use(express.json());
 
+// Request logging for API routes
+app.use((req, res, next) => {
+  // Only log API and auth routes (skip static files)
+  if (req.path.startsWith('/api') || req.path.startsWith('/auth') || req.path === '/health') {
+    const start = Date.now();
+    res.on('finish', () => {
+      const duration = Date.now() - start;
+      console.log(`${req.method} ${req.path} ${res.statusCode} ${duration}ms`);
+    });
+  }
+  next();
+});
+
 // Routes
 app.use('/auth', authRoutes);
 app.use('/api/images', imagesRoutes);
