@@ -143,7 +143,7 @@ const VISUAL_WORDS = new Set([
 function extractVisualWords(title: string): string[] {
   const words = title
     .toLowerCase()
-    .replace(/[^\w\s]/g, ' ')
+    .replace(/[^\w\s']/g, ' ')
     .split(/\s+/)
     .filter(word => word.length > 2 && !COMMON_WORDS.has(word));
 
@@ -161,8 +161,8 @@ export function getLyricalCandidates(lyrics: string[]): string[] {
   if (!lyrics || lyrics.length === 0) return [];
 
   return lyrics.filter(line => {
-    // Clean line
-    const cleanLine = line.toLowerCase().replace(/[^\w\s]/g, '').trim();
+    // Clean line (preserve apostrophes to keep contractions like "I'll" intact)
+    const cleanLine = line.toLowerCase().replace(/[^\w\s']/g, '').trim();
     if (!cleanLine) return false;
 
     const words = cleanLine.split(/\s+/).filter(w => w.length > 0);
@@ -190,8 +190,8 @@ export function extractLyricalPhrase(lyrics: string[]): string | null {
   if (candidates.length > 0) {
     // Pick a random candidate to add variety
     const phrase = candidates[Math.floor(Math.random() * candidates.length)];
-    // Clean punctuation for final query
-    return phrase.replace(/[^\w\s]/g, '').toLowerCase();
+    // Clean punctuation for final query (preserve apostrophes for contractions)
+    return phrase.replace(/[^\w\s']/g, '').toLowerCase();
   }
   
   return null;
@@ -267,9 +267,9 @@ export function generateJukeboxQuery(music: MusicMetadata): string {
 
   // Fallback if still empty: use FULL TITLE + ARTIST
   if (parts.length === 0) {
-    // Sanitize title/artist for search
-    const cleanTitle = music.title.replace(/[^\w\s]/g, '');
-    const cleanArtist = music.artist.replace(/[^\w\s]/g, '');
+    // Sanitize title/artist for search (preserve apostrophes)
+    const cleanTitle = music.title.replace(/[^\w\s']/g, '');
+    const cleanArtist = music.artist.replace(/[^\w\s']/g, '');
     const fallback = `${cleanTitle} ${cleanArtist}`;
     console.log('[Jukebox] No visual keywords found. Using full title fallback:', fallback);
     return fallback;

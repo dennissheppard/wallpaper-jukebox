@@ -69,7 +69,6 @@ function App() {
     lastTrack,
     error: musicError,
     permissionGranted,
-    apiUsage,
     isAutoPaused,
     pauseReason,
     requestPermission,
@@ -170,7 +169,6 @@ function App() {
           lastTrack,
           error: musicError,
           permissionGranted,
-          apiUsage,
           isAutoPaused,
           pauseReason,
         }}

@@ -1,28 +1,66 @@
-.hud {
+.wrapper {
   position: fixed;
   top: 20px;
   left: 20px;
+  z-index: 100;
+}
+
+.expandedContent {
   background: rgba(0, 0, 0, 0.7);
   backdrop-filter: blur(20px);
   border-radius: 12px;
   padding: 20px;
   color: white;
-  z-index: 100;
   min-width: 280px;
   box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
-  animation: hudSlideIn 0.8s cubic-bezier(0.34, 1.56, 0.64, 1);
+  
+  transition: all 0.8s cubic-bezier(0.34, 1.56, 0.64, 1);
   transform-origin: top left;
+  opacity: 1;
+  transform: scale(1);
 }
 
-@keyframes hudSlideIn {
-  from {
-    opacity: 0;
-    transform: scale(0.8) translateY(-20px);
-  }
-  to {
-    opacity: 1;
-    transform: scale(1) translateY(0);
-  }
+.minimizedIcon {
+  position: absolute;
+  top: 0;
+  left: 0;
+  background: rgba(0, 0, 0, 0.7);
+  backdrop-filter: blur(20px);
+  border-radius: 50%;
+  width: 48px;
+  height: 48px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 24px;
+  cursor: pointer;
+  color: white;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.4);
+  
+  transition: all 0.8s cubic-bezier(0.34, 1.56, 0.64, 1);
+  transform-origin: center;
+  opacity: 0;
+  transform: scale(0);
+  pointer-events: none;
+}
+
+/* State: Minimized */
+.wrapper.minimizedState .expandedContent {
+  opacity: 0;
+  transform: scale(0.5);
+  pointer-events: none;
+}
+
+.wrapper.minimizedState .minimizedIcon {
+  opacity: 1;
+  transform: scale(1);
+  pointer-events: auto;
+}
+
+.wrapper.minimizedState .minimizedIcon:hover {
+  background: rgba(0, 0, 0, 0.85);
+  transform: scale(1.15) rotate(10deg);
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.5);
 }
 
 .header {
@@ -51,7 +89,7 @@
   opacity: 0;
 }
 
-.hud:hover .minimizeBtn {
+.expandedContent:hover .minimizeBtn {
   opacity: 1;
 }
 
@@ -70,7 +108,7 @@
   border: 1px solid rgba(255, 255, 255, 0.1);
   border-radius: 8px;
   overflow: visible;
-  animation: sectionFadeIn 0.8s ease backwards;
+  /* animation: sectionFadeIn 0.8s ease backwards; */ /* Removed animation, transitions handle it */
   position: relative;
   z-index: 1;
 }
@@ -79,11 +117,14 @@
   z-index: 10;
 }
 
+/* 
 .section:nth-child(1) { animation-delay: 0.05s; }
 .section:nth-child(2) { animation-delay: 0.1s; }
 .section:nth-child(3) { animation-delay: 0.15s; }
 .section:nth-child(4) { animation-delay: 0.2s; }
+*/
 
+/*
 @keyframes sectionFadeIn {
   from {
     opacity: 0;
@@ -94,6 +135,7 @@
     transform: translateX(0);
   }
 }
+*/
 
 .sectionHeader {
   width: 100%;
@@ -288,46 +330,6 @@
   font-size: 11px;
   text-align: center;
   opacity: 0.6;
-}
-
-.minimized {
-  position: fixed;
-  top: 20px;
-  left: 20px;
-  background: rgba(0, 0, 0, 0.7);
-  backdrop-filter: blur(20px);
-  border-radius: 50%;
-  width: 48px;
-  height: 48px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 24px;
-  cursor: pointer;
-  z-index: 100;
-  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.4);
-  animation: minimizedBounceIn 0.8s cubic-bezier(0.68, -0.55, 0.265, 1.55);
-}
-
-@keyframes minimizedBounceIn {
-  0% {
-    opacity: 0;
-    transform: scale(0) rotate(-180deg);
-  }
-  50% {
-    transform: scale(1.2) rotate(20deg);
-  }
-  100% {
-    opacity: 1;
-    transform: scale(1) rotate(0deg);
-  }
-}
-
-.minimized:hover {
-  background: rgba(0, 0, 0, 0.85);
-  transform: scale(1.15) rotate(10deg);
-  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.5);
 }
 
 .note {

@@ -11,8 +11,14 @@ export default function GlobalToggle({ showControls, onToggle }: Props) {
 
   useEffect(() => {
     const handleMouseMove = (e: MouseEvent) => {
-      // Show if mouse is in top 30% of screen
-      if (e.clientY < window.innerHeight * 0.3) {
+      const width = window.innerWidth;
+      const height = window.innerHeight;
+      
+      // Top 50% of screen AND Middle 33% of width
+      const isTopHalf = e.clientY < height * 0.5;
+      const isMiddleThird = e.clientX > width * 0.33 && e.clientX < width * 0.66;
+
+      if (isTopHalf && isMiddleThird) {
         setIsVisible(true);
       } else {
         setIsVisible(false);

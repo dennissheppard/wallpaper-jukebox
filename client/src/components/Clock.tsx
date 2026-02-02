@@ -47,27 +47,25 @@ function Clock({ showSeconds = false, isMinimized, onToggleMinimize }: Props) {
     return String.fromCodePoint(base + offset);
   };
 
-  if (isMinimized) {
-    return (
+  return (
+    <div className={`${styles.wrapper} ${isMinimized ? styles.minimizedState : ''}`}>
+      <div className={styles.expandedContent}>
+        <div className={styles.header}>
+          <button className={styles.minimizeBtn} onClick={onToggleMinimize}>
+            _
+          </button>
+        </div>
+        <div className={styles.time}>{formatTime(time)}</div>
+        <div className={styles.date}>{formatDate(time)}</div>
+      </div>
+      
       <div 
-        className={styles.minimized} 
+        className={styles.minimizedIcon} 
         onClick={onToggleMinimize}
         title="Show Clock"
       >
         {getClockIcon(time)}
       </div>
-    );
-  }
-
-  return (
-    <div className={styles.container}>
-      <div className={styles.header}>
-        <button className={styles.minimizeBtn} onClick={onToggleMinimize}>
-          _
-        </button>
-      </div>
-      <div className={styles.time}>{formatTime(time)}</div>
-      <div className={styles.date}>{formatDate(time)}</div>
     </div>
   );
 }

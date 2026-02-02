@@ -1,12 +1,7 @@
 import { useState, useCallback, useRef, useEffect } from 'react';
 import { MusicMetadata, MusicSettings } from '../types/music';
 import { captureAudio, requestMicrophonePermission } from '../utils/audioCapture';
-import {
-  recognizeMusic,
-  getApiUsageCount,
-  incrementApiUsage,
-  hasExceededUsageLimit,
-} from '../services/musicService';
+import { recognizeMusic } from '../services/musicService';
 
 interface UseMusicRecognitionOptions {
   settings: MusicSettings;
@@ -22,7 +17,6 @@ export function useMusicRecognition({ settings, onWallpaperQueryReady, isIdle = 
   const [lastTrack, setLastTrack] = useState<MusicMetadata | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [permissionGranted, setPermissionGranted] = useState<boolean | null>(null);
-  const [apiUsage, setApiUsage] = useState(getApiUsageCount());
 
   // Auto-pause state
   const [isAutoPaused, setIsAutoPaused] = useState(false);
@@ -82,12 +76,6 @@ export function useMusicRecognition({ settings, onWallpaperQueryReady, isIdle = 
       }
     }
 
-    // Check API usage limit
-    if (hasExceededUsageLimit()) {
-      setError('Monthly API limit reached (250/250). Resets next month.');
-      return null;
-    }
-
     setIsRecording(true);
     setError(null);
     lastRecognitionTime.current = now;
@@ -124,8 +112,6 @@ export function useMusicRecognition({ settings, onWallpaperQueryReady, isIdle = 
         resumeAutoRecognition();
       }
 
-      incrementApiUsage();
-      setApiUsage(getApiUsageCount());
       setLastTrack(result.track!);
       setError(null);
       setIsRecognizing(false);
@@ -213,7 +199,6 @@ export function useMusicRecognition({ settings, onWallpaperQueryReady, isIdle = 
     lastTrack,
     error,
     permissionGranted,
-    apiUsage,
     isAutoPaused,
     pauseReason,
     requestPermission,

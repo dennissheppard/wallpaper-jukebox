@@ -10,7 +10,8 @@
       "WebFetch(domain:railway.com)",
       "WebFetch(domain:render.com)",
       "WebFetch(domain:fly.io)",
-      "WebFetch(domain:www.koyeb.com)"
+      "WebFetch(domain:www.koyeb.com)",
+      "Bash(npm show:*)"
     ]
   }
 }

@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
+import html2canvas from 'html2canvas';
 import { Settings, ImageResult, ImageSource } from '../types';
 import { WeatherData } from '../types/weather';
 import { getImageProvider } from '../providers';
@@ -192,13 +193,32 @@ export function useWallpaperRotation(settings: Settings, weather: WeatherData | 
     }
   }, [imageQueue.length, fetchImages]);
 
-  const likeImage = useCallback(() => {
-    if (currentImage) {
-      const liked = JSON.parse(localStorage.getItem('liked-images') || '[]');
-      liked.push(currentImage.id);
-      localStorage.setItem('liked-images', JSON.stringify(liked));
+  const likeImage = useCallback(async () => {
+    try {
+      const canvas = await html2canvas(document.body, {
+        useCORS: true,
+        allowTaint: true,
+        scale: window.devicePixelRatio || 1,
+        logging: false,
+      });
+
+      // Convert to blob and download
+      canvas.toBlob((blob) => {
+        if (!blob) return;
+
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = `wallpaper-jukebox-${Date.now()}.png`;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        URL.revokeObjectURL(url);
+      }, 'image/png');
+    } catch (error) {
+      console.error('Screenshot failed:', error);
     }
-  }, [currentImage]);
+  }, []);
 
   return {
     currentImage,

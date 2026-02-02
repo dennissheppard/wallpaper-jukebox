@@ -18,70 +18,76 @@ function NowPlaying({ track, isRecording, isRecognizing, onRefresh, isPaused, pa
   if (!track && !isRecording && !isRecognizing) {
     if (error) {
       return (
-        <div 
-          className={styles.minimized} 
-          onClick={onToggleMinimize}
-          title={`Retrying... Error: ${error}`}
-        >
-          🎵
-          <div className={styles.retryBadge}>↻</div>
+        <div className={`${styles.wrapper} ${isMinimized ? styles.minimizedState : ''}`}>
+          <div className={styles.expandedContent}>
+             {/* Not implemented expanded error state yet, assume minimized */}
+             <div className={styles.retryBadge}>↻</div>
+             {error}
+          </div>
+          
+          <div 
+            className={styles.minimizedIcon} 
+            onClick={onToggleMinimize}
+            title={`Retrying... Error: ${error}`}
+          >
+            🎵
+            <div className={styles.retryBadge}>↻</div>
+          </div>
         </div>
       );
     }
     return null;
   }
 
-  if (isMinimized) {
-    return (
+  return (
+    <div className={`${styles.wrapper} ${isMinimized ? styles.minimizedState : ''}`}>
+      <div className={styles.expandedContent}>
+        {(isRecording || isRecognizing) ? (
+          <div className={styles.listening}>
+            <span className={styles.pulsingDot} />
+            <span>{isRecording ? 'Listening...' : 'Recognizing...'}</span>
+            <button className={styles.minimizeBtn} onClick={onToggleMinimize}>
+              _
+            </button>
+          </div>
+        ) : track ? (
+          <div className={styles.trackInfo}>
+            <div className={styles.header}>
+              <div className={styles.nowPlayingLabel}>
+                Now Playing
+                {isPaused && (
+                  <span className={styles.pausedIndicator} title={pauseReason || 'Auto-recognition paused'}>
+                    ⏸
+                  </span>
+                )}
+              </div>
+              <button className={styles.minimizeBtn} onClick={onToggleMinimize}>
+                _
+              </button>
+            </div>
+            <div className={styles.trackTitle}>{track.title}</div>
+            <div className={styles.trackArtist}>{track.artist}</div>
+            {track.tags && track.tags.length > 0 && (
+              <div className={styles.tags}>
+                {track.tags.slice(0, 4).map((tag, i) => (
+                  <span key={i} className={styles.tag}>{tag}</span>
+                ))}
+              </div>
+            )}
+            <button className={styles.refreshBtn} onClick={onRefresh} title="Update now playing">
+              ↻ Update
+            </button>
+          </div>
+        ) : null}
+      </div>
+
       <div 
-        className={styles.minimized} 
+        className={styles.minimizedIcon} 
         onClick={onToggleMinimize}
         title="Show Now Playing"
       >
         🎵
       </div>
-    );
-  }
-
-  return (
-    <div className={styles.container}>
-      {(isRecording || isRecognizing) ? (
-        <div className={styles.listening}>
-          <span className={styles.pulsingDot} />
-          <span>{isRecording ? 'Listening...' : 'Recognizing...'}</span>
-          <button className={styles.minimizeBtn} onClick={onToggleMinimize}>
-            _
-          </button>
-        </div>
-      ) : track ? (
-        <div className={styles.trackInfo}>
-          <div className={styles.header}>
-            <div className={styles.nowPlayingLabel}>
-              Now Playing
-              {isPaused && (
-                <span className={styles.pausedIndicator} title={pauseReason || 'Auto-recognition paused'}>
-                  ⏸
-                </span>
-              )}
-            </div>
-            <button className={styles.minimizeBtn} onClick={onToggleMinimize}>
-              _
-            </button>
-          </div>
-          <div className={styles.trackTitle}>{track.title}</div>
-          <div className={styles.trackArtist}>{track.artist}</div>
-          {track.tags && track.tags.length > 0 && (
-            <div className={styles.tags}>
-              {track.tags.slice(0, 4).map((tag, i) => (
-                <span key={i} className={styles.tag}>{tag}</span>
-              ))}
-            </div>
-          )}
-          <button className={styles.refreshBtn} onClick={onRefresh} title="Update now playing">
-            ↻ Update
-          </button>
-        </div>
-      ) : null}
     </div>
   );
 }
