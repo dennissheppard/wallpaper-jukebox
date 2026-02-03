@@ -1,4 +1,3 @@
-import { useState } from 'react';
 import styles from './LyricsBadge.module.css';
 
 interface Props {
@@ -6,9 +5,10 @@ interface Props {
   artist?: string;
   isMinimized: boolean;
   onToggleMinimize: () => void;
+  onRefresh?: () => void;
 }
 
-function LyricsBadge({ phrase, artist, isMinimized, onToggleMinimize }: Props) {
+function LyricsBadge({ phrase, artist, isMinimized, onToggleMinimize, onRefresh }: Props) {
   // If no phrase, don't render anything
   if (!phrase) return null;
 
@@ -16,6 +16,15 @@ function LyricsBadge({ phrase, artist, isMinimized, onToggleMinimize }: Props) {
     <div className={`${styles.wrapper} ${isMinimized ? styles.minimizedState : ''}`}>
       <div className={styles.expandedContent}>
         <div className={styles.header}>
+          {onRefresh && (
+            <button
+              className={styles.refreshBtn}
+              onClick={onRefresh}
+              title="Try a different lyric"
+            >
+              ↻
+            </button>
+          )}
           <button className={styles.minimizeBtn} onClick={onToggleMinimize}>
             _
           </button>
@@ -24,8 +33,8 @@ function LyricsBadge({ phrase, artist, isMinimized, onToggleMinimize }: Props) {
         {artist && <div className={styles.artist}>- {artist}</div>}
       </div>
 
-      <div 
-        className={styles.minimizedIcon} 
+      <div
+        className={styles.minimizedIcon}
         onClick={onToggleMinimize}
         title={`"${phrase}" - ${artist || 'Unknown'}`}
       >

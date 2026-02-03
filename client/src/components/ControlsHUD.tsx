@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
-import { Settings, ImageResult } from '../types';
+import { Settings } from '../types';
 import { MusicMetadata } from '../types/music';
 import CustomSelect from './CustomSelect';
 import styles from './ControlsHUD.module.css';
@@ -7,9 +7,6 @@ import styles from './ControlsHUD.module.css';
 interface Props {
   settings: Settings;
   onSettingsChange: (settings: Partial<Settings>) => void;
-  onRotateNow: () => void;
-  onLike: () => void;
-  currentImage: ImageResult | null;
   musicState: {
     isRecording: boolean;
     isRecognizing: boolean;
@@ -67,7 +64,7 @@ function AccordionSection({ title, isOpen, onToggle, children }: AccordionSectio
   );
 }
 
-function ControlsHUD({ settings, onSettingsChange, onRotateNow, onLike, musicState, onRecognizeMusic, onRequestMicPermission, isMinimized, onToggleMinimize }: Props) {
+function ControlsHUD({ settings, onSettingsChange, musicState, onRecognizeMusic, onRequestMicPermission, isMinimized, onToggleMinimize }: Props) {
   const [openSection, setOpenSection] = useState<string>('image');
   const [customQueryInput, setCustomQueryInput] = useState(settings.customQuery);
   const debounceTimerRef = useRef<number>();
@@ -356,15 +353,6 @@ function ControlsHUD({ settings, onSettingsChange, onRotateNow, onLike, musicSta
               </>
             )}
           </AccordionSection>
-        </div>
-
-        <div className={styles.actions}>
-          <button className={styles.actionBtn} onClick={onLike} title="Save Screenshot">
-            📸
-          </button>
-          <button className={styles.actionBtn} onClick={onRotateNow} title="Next">
-            ⏭️
-          </button>
         </div>
 
         <div className={styles.hint}>

@@ -5,7 +5,7 @@ import { recognizeMusic } from '../services/musicService';
 
 interface UseMusicRecognitionOptions {
   settings: MusicSettings;
-  onWallpaperQueryReady?: (query: string, lyric: string | null) => void;
+  onWallpaperQueryReady?: (query: string, lyric: string | null, lyricCandidates: string[]) => void;
   isIdle?: boolean;
 }
 
@@ -118,13 +118,14 @@ export function useMusicRecognition({ settings, onWallpaperQueryReady, isIdle = 
 
       const query = result.wallpaperQuery || null;
       const lyric = result.lyric || null;
+      const lyricCandidates = result.lyricCandidates || [];
 
       // Log the query for debugging
-      console.log('[Music Recognition] Wallpaper query:', query, 'Lyric:', lyric);
+      console.log('[Music Recognition] Wallpaper query:', query, 'Lyric:', lyric, 'Candidates:', lyricCandidates.length);
 
       // Notify callback if provided
       if (query && onWallpaperQueryReady) {
-        onWallpaperQueryReady(query, lyric);
+        onWallpaperQueryReady(query, lyric, lyricCandidates);
       }
 
       return query;

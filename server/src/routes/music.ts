@@ -136,6 +136,11 @@ router.post('/recognize', musicRateLimiter, upload.single('audio'), async (req, 
       console.log('[Music Route] Using jukebox fallback mapping:', wallpaperQuery);
     }
 
+    // Get all lyric candidates for client-side refresh
+    const lyricCandidates = music.lyrics && music.lyrics.length > 0
+      ? getLyricalCandidates(music.lyrics).map(l => l.replace(/[^\w\s']/g, '').toLowerCase())
+      : [];
+
     res.json({
       detected: true,
       track: {
@@ -144,6 +149,7 @@ router.post('/recognize', musicRateLimiter, upload.single('audio'), async (req, 
       },
       wallpaperQuery,
       lyric, // Explicitly return the lyric used (if any)
+      lyricCandidates, // All candidates for client-side refresh
     });
 
   } catch (error: any) {

@@ -8,6 +8,8 @@ import LyricsBadge from './components/LyricsBadge';
 import GlobalToggle from './components/GlobalToggle';
 import IdleOverlay from './components/IdleOverlay';
 import ExploringToast from './components/ExploringToast';
+import ImageNav from './components/ImageNav';
+import SaveButton from './components/SaveButton';
 import { useWallpaperRotation } from './hooks/useWallpaperRotation';
 import { useSettings } from './hooks/useSettings';
 import { useWeather } from './hooks/useWeather';
@@ -43,6 +45,7 @@ function App() {
   });
   
   const [currentLyric, setCurrentLyric] = useState<string | null>(null);
+  const [lyricCandidates, setLyricCandidates] = useState<string[]>([]);
 
   const toggleMinimize = (key: keyof typeof minimizedStates) => {
     setMinimizedStates(prev => ({ ...prev, [key]: !prev[key] }));
@@ -64,13 +67,32 @@ function App() {
   };
 
   // Handle wallpaper query from music recognition (used by both manual and auto)
-  const handleMusicWallpaperQuery = useCallback((query: string, lyric: string | null) => {
+  const handleMusicWallpaperQuery = useCallback((query: string, lyric: string | null, candidates: string[]) => {
     if (settings.music.overrideTheme) {
-      console.log('[App] Updating wallpaper with music query:', query, 'Lyric:', lyric);
+      console.log('[App] Updating wallpaper with music query:', query, 'Lyric:', lyric, 'Candidates:', candidates.length);
       updateSettings({ customQuery: query, theme: 'custom' });
       setCurrentLyric(lyric);
+      setLyricCandidates(candidates);
     }
   }, [updateSettings, settings.music.overrideTheme]);
+
+  // Refresh lyric - pick a new random phrase from candidates
+  const handleRefreshLyric = useCallback(() => {
+    if (lyricCandidates.length <= 1) {
+      console.log('[App] No alternative lyrics available');
+      return;
+    }
+
+    // Pick a random candidate that's different from the current one
+    const alternatives = lyricCandidates.filter(c => c !== currentLyric);
+    if (alternatives.length === 0) return;
+
+    const newLyric = alternatives[Math.floor(Math.random() * alternatives.length)];
+    console.log('[App] Refreshing lyric to:', newLyric);
+
+    setCurrentLyric(newLyric);
+    updateSettings({ customQuery: newLyric, theme: 'custom' });
+  }, [lyricCandidates, currentLyric, updateSettings]);
 
   // Music recognition
   const {
@@ -123,6 +145,13 @@ function App() {
 
       <WallpaperDisplay currentImage={currentImage} nextImage={nextImage} />
 
+      {currentImage && (
+        <>
+          <ImageNav onNext={rotateNow} />
+          <SaveButton onSave={likeImage} />
+        </>
+      )}
+
       <GlobalToggle 
         showControls={!areAllMinimized} 
         onToggle={handleGlobalToggle} 
@@ -146,11 +175,12 @@ function App() {
       )}
 
       {settings.music.enabled && currentLyric && (
-        <LyricsBadge 
-          phrase={currentLyric} 
-          artist={lastTrack?.artist} 
+        <LyricsBadge
+          phrase={currentLyric}
+          artist={lastTrack?.artist}
           isMinimized={minimizedStates.lyrics}
           onToggleMinimize={() => toggleMinimize('lyrics')}
+          onRefresh={lyricCandidates.length > 1 ? handleRefreshLyric : undefined}
         />
       )}
 
@@ -171,9 +201,6 @@ function App() {
       <ControlsHUD
         settings={settings}
         onSettingsChange={updateSettings}
-        onRotateNow={rotateNow}
-        onLike={likeImage}
-        currentImage={currentImage}
         musicState={{
           isRecording,
           isRecognizing,

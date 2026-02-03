@@ -21,4 +21,5 @@ export interface RecognitionResult {
   track?: MusicMetadata;
   wallpaperQuery?: string;
   lyric?: string | null;
+  lyricCandidates?: string[];
 }
